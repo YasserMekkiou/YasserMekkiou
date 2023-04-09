@@ -1,0 +1,126 @@
+# Import pygame library
+import pygame
+
+# Initialize pygame
+pygame.init()
+
+# Create a screen with width 800 and height 600
+screen = pygame.display.set_mode((800, 600))
+
+# Set the title and icon of the window
+pygame.display.set_caption("Alien Invasion")
+icon = pygame.image.load("icon.png")
+pygame.display.set_icon(icon)
+
+# Load the background image
+background = pygame.image.load("background.png")
+
+# Load the player image and set its initial position
+player = pygame.image.load("player.png")
+player_x = 400
+player_y = 500
+player_dx = 0
+
+# Load the laser image and set its initial position and state
+laser = pygame.image.load("laser.png")
+laser_x = 0
+laser_y = 500
+laser_dy = -10
+laser_state = "ready"
+
+# Load the alien image and set its initial position and movement
+alien = pygame.image.load("alien.png")
+alien_x = 100
+alien_y = 50
+alien_dx = 4
+alien_dy = 40
+
+# Define a function to draw the player on the screen
+def draw_player(x, y):
+    screen.blit(player, (x, y))
+
+# Define a function to draw the laser on the screen
+def draw_laser(x, y):
+    global laser_state
+    laser_state = "fire"
+    screen.blit(laser, (x + 16, y + 10))
+
+# Define a function to draw the alien on the screen
+def draw_alien(x, y):
+    screen.blit(alien, (x, y))
+
+# Define a function to check collision between two objects
+def is_collision(x1, y1, x2, y2):
+    distance = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+    if distance < 27:
+        return True
+    else:
+        return False
+
+# Create a game loop
+running = True
+while running:
+
+    # Fill the screen with black color
+    screen.fill((0, 0, 0))
+
+    # Draw the background image on the screen
+    screen.blit(background, (0, 0))
+
+    # Check for events in the game loop
+    for event in pygame.event.get():
+
+        # If the user clicks the close button, exit the game loop
+        if event.type == pygame.QUIT:
+            running = False
+
+        # If the user presses a key, check which key it is
+        if event.type == pygame.KEYDOWN:
+
+            # If the user presses the left arrow key, move the player left
+            if event.key == pygame.K_LEFT:
+                player_dx = -5
+
+            # If the user presses the right arrow key, move the player right
+            if event.key == pygame.K_RIGHT:
+                player_dx = 5
+
+            # If the user presses the space key, fire a laser if it is ready
+            if event.key == pygame.K_SPACE:
+                if laser_state == "ready":
+                    laser_x = player_x
+                    draw_laser(laser_x, laser_y)
+
+        # If the user releases a key, stop moving the player
+        if event.type == pygame.KEYUP:
+
+            # If the user releases the left or right arrow key, stop moving the player
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                player_dx = 0
+
+    # Update the player position based on its movement
+    player_x += player_dx
+
+    # Prevent the player from going out of bounds
+    if player_x < 0:
+        player_x = 0
+    elif player_x > 736:
+        player_x = 736
+
+    # Update the laser position based on its state and speed
+    if laser_state == "fire":
+        draw_laser(laser_x, laser_y)
+        laser_y += laser_dy
+
+    # Reset the laser state and position if it goes out of bounds or hits an alien
+    if laser_y < 0 or is_collision(laser_x, laser_y, alien_x, alien_y):
+        laser_state = "ready"
+        laser_y = 500
+
+    # Update the alien position based on its movement and speed
+    alien_x += alien_dx
+
+    # Change the alien direction and move it down if it hits the edge of the screen
+    if alien_x < 0 or alien_x > 736:
+        alien_dx *= -1
+        alien_y += alien_dy
